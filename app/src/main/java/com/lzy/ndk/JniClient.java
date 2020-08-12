@@ -1,5 +1,7 @@
 package com.lzy.ndk;
 
+import android.content.Context;
+
 public class JniClient {
     //编译头文件命令
     //1.先切换到项目目录
@@ -35,6 +37,10 @@ public class JniClient {
     //JNI 调用构造方法和父类实例方法
     public native static void callSuperInstanceMethod();
 
-    public native static String getStr();
+//    public native static void signatureVerify(Context context);
+
+    public native void dynamicJavaMethod1(int i);
+
+    public native String dynamicJavaMethod2();
 
 }

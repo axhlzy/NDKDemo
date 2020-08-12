@@ -2,16 +2,23 @@ package com.lzy.ndk;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +27,8 @@ import dalvik.system.BaseDexClassLoader;
 import static android.content.ContentValues.TAG;
 
 public class MainActivity extends Activity implements OnClickListener {
+
+    private static final String SIGNATURE = "";
 
     static {
         // 加载so库
@@ -67,6 +76,33 @@ public class MainActivity extends Activity implements OnClickListener {
         bt11.setOnClickListener(this);
         bt12 = this.findViewById(R.id.bt12);
         bt12.setOnClickListener(this);
+
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+
+            for (Signature signature : packageInfo.signatures) {
+                byte[] signatureBytes = signature.toByteArray();
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signatureBytes);
+
+                final String currentSignature = Base64.encodeToString(md.digest(), Base64.DEFAULT);
+                Log.d(TAG, "findViews: " + Arrays.toString(signatureBytes));
+                Log.d(TAG, "findViews: " + currentSignature);
+
+                Log.d("REMOVE_ME", "Include this string as a value for SIGNATURE:" + currentSignature);
+
+                //compare signatures
+                if (SIGNATURE.equals(currentSignature)) {
+
+                }
+            }
+
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
 
     }
 

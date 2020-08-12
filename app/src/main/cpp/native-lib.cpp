@@ -554,3 +554,88 @@ Java_com_lzy_ndk_JniClient_callSuperInstanceMethod(JNIEnv *env, jclass clazz) {
 //	env->DeleteLocalRef( c_str_name);
 //	env->DeleteLocalRef( obj_cat);
 }
+
+int sum(int m, ...) {
+    va_list ap;//依次指向每个无名参数
+    va_start(ap, m);//将ap指向第一个无名参数
+    int sum = 0;
+    while (m--) {
+        sum += va_arg(ap, int);
+    }
+    va_end(ap);//结束时候的清理工作
+    return sum;
+
+
+}
+
+//检测是否被xposed注入
+__attribute__((constructor))
+bool IsHookByXPosed() {
+
+    char buf[1024] = {0};
+    FILE *fp;
+    int pid = getpid();
+    sprintf(buf, "/proc/%d/maps", pid);
+    fp = fopen(buf, "r");
+    if (fp == NULL) {
+        LOGI("Error open maps file in progress %d", pid);
+        return false;
+    }
+
+//    if(mXPosedGlobalRef != 0){
+//        LOGI("app be injected by xposed or substrate.");
+//        return true;
+//    }
+
+    while (fgets(buf, sizeof(buf), fp)) {
+        if (strstr(buf, "com.saurik.substrate") || strstr(buf, "io.va.exposed") ||
+            strstr(buf, "de.robv.android.xposed")) {
+            LOGI("app be injected by xposed or substrate.");
+            fclose(fp);
+            return true;
+        }
+    }
+    fclose(fp);
+
+    return false;
+}
+
+//进程名称检测
+extern "C"
+__attribute__((constructor))
+void coursecheck() {
+    const int bufsize = 1024;
+    char filename[bufsize];
+    char line[bufsize];
+    char name[bufsize];
+    char nameline[bufsize];
+    int pid = getpid();
+    //先读取Tracepid的值
+    strstr("and", "android_server");
+    strcmp("ans", "android_server");
+
+    sprintf(filename, "/proc/%d/status", pid);
+    sprintf(name, "/proc/%d/cmdline", 2);
+    FILE *fd = fopen(filename, "r");
+    if (fd != NULL) {
+        while (fgets(line, bufsize, fd)) {
+            if (strstr(line, "TracerPid") != NULL) {
+                int statue = atoi(&line[10]);
+                if (statue != 0) {
+                    sprintf(name, "/proc/%d/cmdline", statue);
+                    FILE *fdname = fopen(name, "r");
+                    if (fdname != NULL) {
+                        while (fgets(nameline, bufsize, fdname)) {
+                            if (strstr(nameline, "android_server") != NULL) {
+                                int ret = kill(pid, SIGKILL);
+                            }
+                        }
+                    }
+                    fclose(fdname);
+                }
+            }
+        }
+    }
+}
+
+//j_
